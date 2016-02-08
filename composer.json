@@ -18,8 +18,8 @@
 
     "require": {
         "yiisoft/yii2": "*",
-        "vtvz/yii2-relations": "dev-master",
-        "vtvz/yii2-bparser": "dev-master"
+        "vtvz/yii2-relations": "*",
+        "vtvz/yii2-bparser": "*"
     },
 
     "autoload": {
