@@ -1,0 +1,36 @@
+{
+    "name": "vtvz/yii2-extrelations",
+
+    "type": "yii2-extension",
+
+    "description": "Support extended ActiveRecord relations",
+    "keywords": ["yii2", "activerecord", "relations"],
+    "license": "MIT",
+    "support": {
+        "source": "https://github.com/vtvz/yii2-extrelations"
+    },
+    "authors": [
+        {
+            "name": "Vitaly Zaslavsky",
+            "email": "vtvz.ru@gmail.com"
+        }
+    ],
+
+    "require": {
+        "yiisoft/yii2": "*",
+        "vtvz/yii2-relations": "dev-master",
+        "vtvz/yii2-bparser": "dev-master"
+    },
+
+    "autoload": {
+        "psr-4": {
+            "vtvz\\extrelations\\": ""
+        }
+    },
+
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.2.0-dev"
+        }
+    }
+}
