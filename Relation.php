@@ -33,7 +33,7 @@ class Relation extends \vtvz\relations\BaseRelation
         self::TYPE_MANY_TO_MANY => ['id' => '{name-vs}Id'],
     ];
 
-    public $viaTableLinkTemplate = ['{inverseOf-vs}Id' => 'id'];
+    public $viaLinkTemplate = ['{inverseOf-vs}Id' => 'id'];
 
     public $viaTableTemplate = '{{%mn_{aRel-us}_has_{bRel-us}}}';// u - unserscore; s - singularize
 
@@ -83,7 +83,7 @@ class Relation extends \vtvz\relations\BaseRelation
         $relation = $this->owner->{$type}($this->model, $this->getLink());
 
         if ($this->getType() === self::TYPE_MANY_TO_MANY) {
-            $relation->viaTable($this->getViaTable(), $this->getViaTableLink());
+            $relation->viaTable($this->getViaTable(), $this->getViaLink());
         }
 
         if (!empty($this->inverseOf)) {
@@ -251,12 +251,12 @@ class Relation extends \vtvz\relations\BaseRelation
         return $this->parseStr($this->viaTableTemplate);
     }
 
-    public function getViaTableLink()
+    public function getViaLink()
     {
-        if ($this->viaTableLink) {
-            return $this->parseLink($this->viaTableLink);
+        if ($this->viaLink) {
+            return $this->parseLink($this->viaLink);
         }
 
-        return $this->parseLink($this->viaTableLinkTemplate);
+        return $this->parseLink($this->viaLinkTemplate);
     }
 }
