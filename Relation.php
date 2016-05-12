@@ -1,12 +1,15 @@
 <?php
 namespace vtvz\extrelations;
 
+
 // use yii\base\Object;
 use yii\base\InvalidParamException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\helpers\Inflector;
+
 
 /**
 *
@@ -60,9 +63,23 @@ class Relation extends \vtvz\relations\BaseRelation
 
             $this->parser = \Yii::createObject(array_merge($this->parserConfig, ['parts' => $parts]));
         }
+
     }
 
-    public function beforeDelete($event)
+    public function save()
+    {
+        foreach ($this->populations as $population) {
+            if (!$population->save()) {
+                throw new InvalidValueException('Can\'t save populated value');
+            }
+
+            $this->owner->link($this->name, $population);
+        }
+
+        return true;
+    }
+
+    public function unlink()
     {
         if (!$this->getUnlink()) {
             return true;
@@ -73,6 +90,7 @@ class Relation extends \vtvz\relations\BaseRelation
         return true;
     }
 
+
     /**
      * Получение ActiveQuery связи
      */
@@ -80,19 +98,27 @@ class Relation extends \vtvz\relations\BaseRelation
     {
         $type = $this->types[$this->getType()];
 
+        /** @var ActiveQuery $relation */
         $relation = $this->owner->{$type}($this->model, $this->getLink());
 
-        if ($this->getType() === self::TYPE_MANY_TO_MANY) {
+
+
+        if ($this->getCallable instanceof \Closure) {
+            $relation = call_user_func($this->getCallable, $relation);
+        }
+
+        if (!empty($this->getVia())) {
+            $relation->via($this->via);
+        } elseif ($this->getType() === self::TYPE_MANY_TO_MANY) {
             $relation->viaTable($this->getViaTable(), $this->getViaLink());
         }
+
 
         if (!empty($this->inverseOf)) {
             $relation->inverseOf($this->inverseOf);
         }
 
-        if (!empty($this->getVia())) {
-            $relation->via($this->via);
-        }
+
 
         return $relation;
     }
@@ -105,19 +131,28 @@ class Relation extends \vtvz\relations\BaseRelation
 
         if (empty($this->inverseOf)) {
             throw new InvalidConfigException('Property "inverseOf" shoudn\'t be empty');
+
+        }
+
+        if ($this->addCallable instanceof \Closure) {
+            $value = call_user_func($this->addCallable, $value);
         }
 
         if (!$value->validate()) {
             throw new InvalidValueException('Value shoud be valid');
         }
 
-        if (!empty($this->getViaTable()) && $value->getIsNewRecord()) {
-            if (!$value->save(false)) {
+
+        $this->populations[] = $value;
+
+        /*if (!empty($this->getViaTable()) && ($value->getIsNewRecord() || $this->owner->getIsNewRecord())) {
+            if (!$value->save(false) || $this->owner->save()) {
                 throw new InvalidValueException('Can\'t save value');
             }
         }
 
-        $this->owner->link($this->name, $value);
+        $this->owner->link($this->name, $value);*/
+
     }
 
     public function create($params = [])
@@ -166,6 +201,7 @@ class Relation extends \vtvz\relations\BaseRelation
 
 
     */
+
     public function getUnlink()
     {
         if ($this->unlink !== null) {
@@ -179,6 +215,7 @@ class Relation extends \vtvz\relations\BaseRelation
         ];
 
         if (in_array($this->getType(), $unlinks)) {
+
             return true;
         }
 
@@ -198,6 +235,7 @@ class Relation extends \vtvz\relations\BaseRelation
         ];
 
         if (in_array($this->getType(), $deletes)) {
+
             return true;
         }
 
@@ -206,6 +244,7 @@ class Relation extends \vtvz\relations\BaseRelation
 
     public function getType()
     {
+
         if ($this->type !== null) {
             return $this->type;
         }
@@ -258,5 +297,6 @@ class Relation extends \vtvz\relations\BaseRelation
         }
 
         return $this->parseLink($this->viaLinkTemplate);
+
     }
 }
